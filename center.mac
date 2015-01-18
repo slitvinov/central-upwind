@@ -28,7 +28,7 @@ S[0]: [-2, -1, 0]$
 S[1]: [-1, 0,  1]$
 S[2]: [0,  1,  2]$
 S[6]: [-2, -1, 0, 1, 2, 3]$
-klist: list_of_sub(S);
+klist: list_of_sub(S) $
 
 /* get \hat{f} functions, eq. (7) */
 for k in klist do (
@@ -36,7 +36,7 @@ for k in klist do (
   eq: makelist ( (f(n))(q*dx) = f[i+q], q, S[k]),
   avar: delete(x, listofvars(h(n))),
   so: solve(eq, avar)[1],
-  fhat[k]: subst(so, h(n)));
+  fhat[k]: subst(so, h(n))) $
 
 /* show that eq (8) holds */
 revsum(factor(expand(fhat[0](1/2*dx))));
@@ -55,7 +55,7 @@ revsum(factor(expand(fhat[6](1/2*dx))));
 for k in klist do (
   be[k]:   sum(dx^(2*j-1)*integrate(diff(fhat[k](x), x, j)^2,
         x, -dx/2, dx/2),
-      j, 1, length(S[k])));
+      j, 1, length(S[k]))) $
 
 /* make sure the resulting scheme is of 5th order (use eq. (5) to approximate derivative) */
 expr_aux: lsum(om[k]*fhat[k](dx/2), k, [0, 1, 2])$
