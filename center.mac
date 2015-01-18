@@ -15,8 +15,11 @@ load("scheme2t.mac")$
 load("revsum.mac")$
 load("expr2c.mac")$
 
-/* h is a polynomial of the order of n */
-h(n):= block([q, body: sum(a[i]*x^i, i, 0, n)],
+assume(dx>0)$
+
+
+/* h(n) is a polynomial of the order of n */
+h(n):= block([q, body: sum('a[i]*x^i, i, 0, n)],
   subst(body,  'q, lambda([x], q)))$
 
 /* is defined by eq. (3) */
@@ -28,7 +31,7 @@ S[0]: [-2, -1, 0]$
 S[1]: [-1, 0,  1]$
 S[2]: [0,  1,  2]$
 S[6]: [-2, -1, 0, 1, 2, 3]$
-klist: flatten(rest(arrayinfo(S), 2));
+klist: list_of_sub(S);
 
 /* get \hat{f} functions, eq. (7) */
 for k in klist do (
@@ -38,50 +41,24 @@ for k in klist do (
   so: solve(eq, avar)[1],
   fhat[k]: subst(so, h(n)));
 
-/* eq. (8) */
+/* show that eq (8) holds */
 revsum(factor(expand(fhat[0](1/2*dx))));
 revsum(factor(expand(fhat[1](1/2*dx))));
 revsum(factor(expand(fhat[2](1/2*dx))));
 
 /* show that we approximate a first derivative */
-revsum(expand(scheme2t ( (fhat[0](1/2*dx) - fhat[0](-1/2*dx))/dx, i, 4)));
-revsum(expand(scheme2t ( (fhat[1](1/2*dx) - fhat[1](-1/2*dx))/dx, i, 4)));
-revsum(expand(scheme2t ( (fhat[2](1/2*dx) - fhat[2](-1/2*dx))/dx, i, 4)));
+revsum(expand(scheme2t((fhat[0](1/2*dx) - fhat[0](-1/2*dx))/dx, i, 4)));
+revsum(expand(scheme2t((fhat[1](1/2*dx) - fhat[1](-1/2*dx))/dx, i, 4)));
+revsum(expand(scheme2t((fhat[2](1/2*dx) - fhat[2](-1/2*dx))/dx, i, 4)));
 
 /* eq. (16) */
 revsum(factor(expand(fhat[6](1/2*dx))));
 
-/* get betas from eq. (11) */
+/* get beta using eq. (11) */
 for k in klist do (
   be[k]:   sum(dx^(2*j-1)*integrate(diff(fhat[k](x), x, j)^2,
         x, -dx/2, dx/2),
       j, 1, length(S[k])));
-
-/* compare with values from the paper (see eq. (12)) */
-beta_paper[0]: 1/4*(f[i-2] - 4*f[i-1] + 3*f[i])^2 + 13/12*(f[i-2] - 2*f[i-1] + f[i])^2;
-beta_paper[1]: 1/4*(f[i-1] - f[i+1])^2 + 13/12*(f[i-1] - 2*f[i] + f[i+1])^2;
-beta_paper[2]: 1/4*(3*f[i] - 4*f[i+1] + f[i+2])^2 + 13/12*(f[i] - 2*f[i+1] + f[i+2])^2;
-expand(beta_paper[0] - be[0]);
-expand(beta_paper[1] - be[1]);
-expand(beta_paper[2] - be[2]);
-
-/* eq. (13) */
-taylor(expand(scheme2t(be[0], i, 6)), dx, 0, 5);
-taylor(expand(scheme2t(be[1], i, 6)), dx, 0, 5);
-taylor(expand(scheme2t(be[2], i, 6)), dx, 0, 5);
-
-/* optimal weights for the classical 5th-order upwind scheme */
-d[0]: 1/10$
-d[1]: 3/5$
-d[2]: 3/10$
-for k in [0, 1, 2] do (
-  al[k]: d[k]/(be[k]+eps)^1
-  );
-
-for k in [0, 1, 2] do (
-  om[k]: al[k]/lsum(al[k], k, [0, 1, 2])
-  );
-assume(dx>0);
 
 /* make sure the resulting scheme is of 5th order (use eq. (5) to approximate derivative) */
 expr_aux: lsum(om[k]*fhat[k](dx/2), k, [0, 1, 2])$
@@ -105,4 +82,4 @@ block([display2d: false],
 display2d: false;
 
 /* ready to "copy-pase" into c++ */
-expr2c(float(expr));
+expr2c(float(expand(expr)));

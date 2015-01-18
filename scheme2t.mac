@@ -1,15 +1,18 @@
 load("pdiff");
-%dx%: 'dx;
-%schemeflist%: ['f, 'u, 'rho];
-matchdeclare(fun, lambda([q], subvarp(q) and member(part(q, 0), %schemeflist%)));
-defrule( rr,    fun,    scheme2t_aux(fun, %i%, %order%));
+%dx%: 'dx $
+%schemeflist%: ['f, 'u, 'rho] $
+matchdeclare(fun, lambda([q], subvarp(q) and member(part(q, 0), %schemeflist%))) $
+defrule( rr,    fun,    scheme2t_aux(fun, %i%, %order%)) $
+
 scheme2t_aux(expr, cell, order):= block([gexpr, g, ddx, idx],
   g:  funmake(nounify(part(expr, 0)), [ddx]),
   gexpr: ratexpand(taylor(g, ddx, 0, order)),
   idx: part(expr, 1),
-  subst([ddx = %dx%  * (idx - cell)], gexpr));
+  subst([ddx = %dx%  * (idx - cell)], gexpr)) $
+
 scheme2t(expr, cell, order):= block([],
   %i%: cell,
   %order%: order,
-  apply1(expr, rr));
+  apply1(expr, rr)) $
 
+list_of_sub(S):=flatten(rest(arrayinfo(S), 2));
