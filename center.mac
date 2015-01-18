@@ -15,9 +15,6 @@ load("scheme2t.mac")$
 load("revsum.mac")$
 load("expr2c.mac")$
 
-assume(dx>0)$
-
-
 /* h(n) is a polynomial of the order of n */
 h(n):= block([q, body: sum('a[i]*x^i, i, 0, n)],
   subst(body,  'q, lambda([x], q)))$
@@ -62,24 +59,15 @@ for k in klist do (
 
 /* make sure the resulting scheme is of 5th order (use eq. (5) to approximate derivative) */
 expr_aux: lsum(om[k]*fhat[k](dx/2), k, [0, 1, 2])$
-expr: expand(-1/dx*scheme2t( expr_aux - subst(i-1, i, expr_aux), i, 4))$
-/* can take several minutes to run */
-isolate(taylor(subst(eps=0, expr), dx, 0, 6), dx);
+expr: expand(-1/dx*scheme2t( expr_aux - subst(i-1, i, expr_aux), i, 4));
 
 /* eq. (27) */
 expand(1/6*scheme2t(be[0] + be[2] + 4*be[1], i, 3));
 expand(scheme2t(be[6], i, 2));
 
 /* to get the same form as in the paper ... */
-expr: revsum(factor(12*be[6]));
-
-/* print the coefficients */
-block([display2d: false],
-  for k: -2 thru 3 do
-  for m: k thru 3 do
-  print(ratcoef(part(expr, 1), f[i+k]*f[i+m])*f[i+k]*f[i+m]));
-
-display2d: false;
+expr: revsum(factor(12*be[6]))$
 
 /* ready to "copy-pase" into c++ */
+display2d: false;
 expr2c(float(expand(expr)));
