@@ -1,7 +1,6 @@
 Generate center-upwind scheme from [1]. Main file is [[center.mac]]
 
-#+CAPTION: Fig. 1. The computational uniform grid xi: the 5-point stencil S5 composed of three 3-points stencils S0, S1, S2 and the 6-points stencil S6 with an extra 3-
-point stencil S3.
+#+CAPTION: Fig. 1. The computational uniform grid xi: the 5-point stencil S5 composed of three 3-points stencils S0, S1, S2 and the 6-points stencil S6 with an extra 3-point stencil S3.
 #+NAME:   fig:poiseuille
 [[file:img/fig1.png]]
 
