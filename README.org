@@ -1,4 +1,8 @@
-Generate center-upwind scheme
+Generate center-upwind scheme from [1]. Main file is [[center.mac]]
+
+1.Hu, X. Y., Wang, Q. & Adams, N. A. An adaptive central-upwind
+weighted essentially non-oscillatory scheme. Journal of Computational
+Physics 229, 8952–8965 (2010).
 
 #+BEGIN_SRC maxima
 (%i12) revsum(factor(expand(fhat[0](1/2*dx))));
