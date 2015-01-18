@@ -1,0 +1,7 @@
+load("abs_integrate")$
+load("simplifying.lisp");
+revsum(expr):= block([],
+  if mapatom(expr) then expr
+  else if inpart(expr, 0)="+" then apply('simpfuncall, cons(verbify("+"), reverse(inargs(expr))))
+  else if inpart(expr, 0)="*" then map('revsum, expr)
+  else expr);

@@ -1,0 +1,99 @@
+/* written by Sergey Litvinov <slitvinov@gmail.com> 
+#  This program is free software; you can redistribute it and/or modify        
+#  it under the terms of the GNU General Public License as published by        
+#  the Free Software Foundation; either version 2 of the License, or           
+#  (at your option) any later version.                
+*/
+
+/* Refer to
+1.Hu, X. Y., Wang, Q. & Adams, N. A. An adaptive central-upwind
+weighted essentially non-oscillatory scheme. Journal of Computational
+Physics 229, 8952–8965 (2010).
+*/
+
+load("scheme2t.mac")$
+load("revsum.mac")$
+
+/* h is a polynomial of the order of n */
+h(n):= block([q, body: sum(a[i]*x^i, i, 0, n)], subst(body,  'q, lambda([x], q)));
+
+/* is defined by eq. (3) */
+f(n):= block([q, body: 1/dx*integrate(h(n)(dzita), dzita, -dx/2+x, dx/2+x)], subst(body, 'q, lambda([x], q)));
+
+/* stencils from Fig. 1 */
+S[0]: [-2, -1, 0];
+S[1]: [-1, 0,  1];
+S[2]: [0,  1,  2];
+S[6]: [-2, -1, 0, 1, 2, 3];
+klist: flatten(rest(arrayinfo(S), 2));
+
+/* get \hat{f} functions, eq. (7) */
+for k in klist do (
+  n: length(S[k])-1,
+  eq: makelist ( (f(n))(q*dx) = f[i+q], q, S[k]),
+  avar: delete(x, listofvars(h(n))),
+  so: solve(eq, avar)[1],
+  fhat[k]: subst(so, h(n)));
+
+/* eq. (8) */
+revsum(factor(expand(fhat[0](1/2*dx))));
+revsum(factor(expand(fhat[1](1/2*dx))));
+revsum(factor(expand(fhat[2](1/2*dx))));
+
+/* show that we approximate a first derivative */
+revsum(expand(scheme2t ( (fhat[0](1/2*dx) - fhat[0](-1/2*dx))/dx, i, 4)));
+revsum(expand(scheme2t ( (fhat[1](1/2*dx) - fhat[1](-1/2*dx))/dx, i, 4)));
+revsum(expand(scheme2t ( (fhat[2](1/2*dx) - fhat[2](-1/2*dx))/dx, i, 4)));
+
+/* eq. (16) */
+revsum(factor(expand(fhat[6](1/2*dx))));
+
+/* get betas from eq. (11) */
+for k in klist do (
+  be[k]:   sum(dx^(2*j-1)*integrate(diff(fhat[k](x), x, j)^2,
+        x, -dx/2, dx/2),
+      j, 1, length(S[k])));
+
+/* compare with values from the paper (see eq. (12)) */
+beta_paper[0]: 1/4*(f[i-2] - 4*f[i-1] + 3*f[i])^2 + 13/12*(f[i-2] - 2*f[i-1] + f[i])^2;
+beta_paper[1]: 1/4*(f[i-1] - f[i+1])^2 + 13/12*(f[i-1] - 2*f[i] + f[i+1])^2;
+beta_paper[2]: 1/4*(3*f[i] - 4*f[i+1] + f[i+2])^2 + 13/12*(f[i] - 2*f[i+1] + f[i+2])^2;
+expand(beta_paper[0] - be[0]);
+expand(beta_paper[1] - be[1]);
+expand(beta_paper[2] - be[2]);
+
+/* eq. (13) */
+taylor(expand(scheme2t(be[0], i, 6)), dx, 0, 5);
+taylor(expand(scheme2t(be[1], i, 6)), dx, 0, 5);
+taylor(expand(scheme2t(be[2], i, 6)), dx, 0, 5);
+
+/* optimal weights for the classical 5th-order upwind scheme */
+d[0]: 1/10$
+d[1]: 3/5$
+d[2]: 3/10$
+for k in [0, 1, 2] do (
+  al[k]: d[k]/(be[k]+eps)^1
+  );
+
+for k in [0, 1, 2] do (
+  om[k]: al[k]/lsum(al[k], k, [0, 1, 2])
+  );
+assume(dx>0);
+/* make sure the resulting scheme is of 5th order (use eq. (5) to approximate derivative) */
+expr_aux: lsum(om[k]*fhat[k](dx/2), k, [0, 1, 2])$
+expr: expand(-1/dx*scheme2t( expr_aux - subst(i-1, i, expr_aux), i, 4))$
+/* can take several minutes to run */
+isolate(taylor(subst(eps=0, expr), dx, 0, 6), dx);
+
+/* eq. (27) */
+expand(1/6*scheme2t(be[0] + be[2] + 4*be[1], i, 3));
+expand(scheme2t(be[6], i, 2));
+
+/* to get the same form as in the paper ... */
+expr: revsum(factor(12*be[6]));
+/* print the coefficients */
+block([display2d: false],
+  for k: -2 thru 3 do
+  for m: k thru 3 do
+  print(ratcoef(part(expr, 1), f[i+k]*f[i+m])*f[i+k]*f[i+m]));
+

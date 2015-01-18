@@ -1,0 +1,27 @@
+(kill(all), 'done);
+'done$
+
+(load("scheme2t.mac"), 'done);
+'done$
+
+(load("opsubst"), 'done);
+'done$
+
+
+values;
+[%dx%, %schemeflist%]$
+
+%schemeflist%;
+[f, u, rho]$
+
+%dx%;
+'dx$
+
+scheme2t((f[i] - f[i-1])/'dx, i, 1);
+pderivop(f,1)(0);
+
+/*?
+?princ(scheme2t((f[i] - f[i-1])/'dx, i, 1))$
+?princ(pderivop(nounify(f),1)(0))$
+*/
+

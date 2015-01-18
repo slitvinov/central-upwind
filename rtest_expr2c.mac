@@ -1,0 +1,25 @@
+(kill(all), 'done);
+'done$
+
+(load("expr2c.mac"), 'done);
+'done$
+
+/*
+grind(expr2c(c*a*a));
+grind(expr2c(a*a*a));
+grind(expr2c(a^(-1)));
+
+grind(expr2c(exp(b)))$
+grind(expr2c(r^2))$
+grind(expr2c(exp(-y)))$
+grind(expr2c(w(r)^2))$
+
+plusfun(x):=x;
+expr: (1 - eps^2*r^2 + eps^4*r^4/6)*plusfun(1-r)^6*(1+6*r+35/3*r^2);
+grind(expr2c(r^2));
+grind(expr2c(expr));
+grind(expr2c(diff(expr,r)));
+
+expr2c( part(expr, [1, 2]));
+expr2c( 2*r^2);
+*/

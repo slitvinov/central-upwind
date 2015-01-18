@@ -1,0 +1,15 @@
+load("opsubst");
+load("simplifying.lisp");
+
+ns_all_mult(expr):= opsubst("."=lambda([[arg]], apply(ns_mult, arg)), expr)$
+ns_mult([arg]):= apply('simpfuncall, cons(verbify("*"), arg))$
+ns_exp(a):= apply('simpfuncall, ['exp, a])$
+expr2c_tpower(a, b):=
+if     numberp(b) and b<0 then 1/expr2c_tpower(a, -b)
+elseif a=%e then    ns_exp(b)
+elseif b=1 then a
+elseif b=2 then ns_mult(a, a)
+elseif b=3 then ns_mult(a, a, a)
+else pow(a, b)$
+expr2c(expr):=opsubst("^"=lambda([a, b], expr2c_tpower(a, b)), ns_all_mult(expr))$
+
