@@ -13,18 +13,21 @@ Physics 229, 8952–8965 (2010).
 
 load("scheme2t.mac")$
 load("revsum.mac")$
+load("expr2c.mac")$
 
 /* h is a polynomial of the order of n */
-h(n):= block([q, body: sum(a[i]*x^i, i, 0, n)], subst(body,  'q, lambda([x], q)));
+h(n):= block([q, body: sum(a[i]*x^i, i, 0, n)],
+  subst(body,  'q, lambda([x], q)))$
 
 /* is defined by eq. (3) */
-f(n):= block([q, body: 1/dx*integrate(h(n)(dzita), dzita, -dx/2+x, dx/2+x)], subst(body, 'q, lambda([x], q)));
+f(n):= block([q, body: 1/dx*integrate(h(n)(dzita), dzita, -dx/2+x, dx/2+x)],
+  subst(body, 'q, lambda([x], q)))$
 
 /* stencils from Fig. 1 */
-S[0]: [-2, -1, 0];
-S[1]: [-1, 0,  1];
-S[2]: [0,  1,  2];
-S[6]: [-2, -1, 0, 1, 2, 3];
+S[0]: [-2, -1, 0]$
+S[1]: [-1, 0,  1]$
+S[2]: [0,  1,  2]$
+S[6]: [-2, -1, 0, 1, 2, 3]$
 klist: flatten(rest(arrayinfo(S), 2));
 
 /* get \hat{f} functions, eq. (7) */
@@ -79,6 +82,7 @@ for k in [0, 1, 2] do (
   om[k]: al[k]/lsum(al[k], k, [0, 1, 2])
   );
 assume(dx>0);
+
 /* make sure the resulting scheme is of 5th order (use eq. (5) to approximate derivative) */
 expr_aux: lsum(om[k]*fhat[k](dx/2), k, [0, 1, 2])$
 expr: expand(-1/dx*scheme2t( expr_aux - subst(i-1, i, expr_aux), i, 4))$
@@ -91,9 +95,14 @@ expand(scheme2t(be[6], i, 2));
 
 /* to get the same form as in the paper ... */
 expr: revsum(factor(12*be[6]));
+
 /* print the coefficients */
 block([display2d: false],
   for k: -2 thru 3 do
   for m: k thru 3 do
   print(ratcoef(part(expr, 1), f[i+k]*f[i+m])*f[i+k]*f[i+m]));
 
+display2d: false;
+
+/* ready to "copy-pase" into c++ */
+expr2c(float(expr));
